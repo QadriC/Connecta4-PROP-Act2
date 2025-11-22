@@ -113,8 +113,63 @@ public class CapitanSalami implements Jugador, IAuto {
         }
     }
 
+    // --- HEURÍSTICA (Igual que abans) ---
     private int avaluarTauler(Tauler t, int colorJugador) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        int puntuacio = 0;
+        int mida = t.getMida();
+        int columnaCentral = mida / 2;
+
+        for (int f = 0; f < mida; f++) {
+            if (t.getColor(f, columnaCentral) == colorJugador) {
+                puntuacio += 6;
+            }
+        }
+
+        // Horitzontal
+        for (int f = 0; f < mida; f++) {
+            for (int c = 0; c < mida - 3; c++) {
+                puntuacio += puntuarFinestra(t.getColor(f, c), t.getColor(f, c+1), t.getColor(f, c+2), t.getColor(f, c+3), colorJugador);
+            }
+        }
+        // Vertical
+        for (int c = 0; c < mida; c++) {
+            for (int f = 0; f < mida - 3; f++) {
+                puntuacio += puntuarFinestra(t.getColor(f, c), t.getColor(f+1, c), t.getColor(f+2, c), t.getColor(f+3, c), colorJugador);
+            }
+        }
+        // Diagonal /
+        for (int f = 0; f < mida - 3; f++) {
+            for (int c = 0; c < mida - 3; c++) {
+                puntuacio += puntuarFinestra(t.getColor(f, c), t.getColor(f+1, c+1), t.getColor(f+2, c+2), t.getColor(f+3, c+3), colorJugador);
+            }
+        }
+        // Diagonal \
+        for (int f = 0; f < mida - 3; f++) {
+            for (int c = 3; c < mida; c++) {
+                puntuacio += puntuarFinestra(t.getColor(f, c), t.getColor(f+1, c-1), t.getColor(f+2, c-2), t.getColor(f+3, c-3), colorJugador);
+            }
+        }
+        return puntuacio;
     }
 
+    private int puntuarFinestra(int c1, int c2, int c3, int c4, int colorPropi) {
+        int meves = 0;
+        int buides = 0;
+        int rivals = 0;
+        int colorRival = colorPropi * -1;
+        int[] caselles = {c1, c2, c3, c4};
+       
+        for (int val : caselles) {
+            if (val == colorPropi) meves++;
+            else if (val == 0) buides++;
+            else if (val == colorRival) rivals++;
+        }
+
+        if (meves == 4) return 10000;          
+        if (meves == 3 && buides == 1) return 100;
+        if (meves == 2 && buides == 2) return 10;  
+        if (rivals == 3 && buides == 1) return -90;
+
+        return 0;
+    }
 }
