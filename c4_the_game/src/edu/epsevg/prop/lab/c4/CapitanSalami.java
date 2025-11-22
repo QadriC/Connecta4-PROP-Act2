@@ -50,17 +50,70 @@ public class CapitanSalami implements Jugador, IAuto {
 
         System.out.println("Heurístiques calculades: " + nodesExplorats);
         
-        // Si tot falla (no hauria de passar), tornem la primera vàlida
-        if (millorCol == -1) {
-             for (int i = 0; i < t.getMida(); i++) {
-                if (t.movpossible(i)) return i;
-            }
-        }
-        
         return millorCol;
     }
 
     private int minimax(Tauler t, int depth, int alpha, int beta, boolean myTurn) {
+        
+        if (depth == 0 || !t.espotmoure()) {
+            nodesExplorats++;
+            return avaluarTauler(t, myColor);
+        }
+
+        // El color del rival = invers del meu
+        int colorRival = myColor * -1;
+
+        if (myTurn) { // Torn MAX (Nosaltres, usem myColor)
+            int maxValor = Integer.MIN_VALUE;
+            
+            for (int col = 0; col < t.getMida(); ++col) {
+                if (t.movpossible(col)) {
+                    Tauler nouTauler = new Tauler(t);
+                    nouTauler.afegeix(col, myColor); // Tirem nosaltres
+
+                    if (nouTauler.solucio(col, myColor)) {
+                        nodesExplorats++;
+                        return 100000 + depth; 
+                    }
+
+                    // Cridem recursivament, ara li toca al rival (false)
+                    int eval = minimax(nouTauler, depth - 1, alpha, beta, false);
+                    
+                    maxValor = Math.max(maxValor, eval);
+                    alpha = Math.max(alpha, eval);
+                    
+                    if (beta <= alpha) break;
+                }
+            }
+            return maxValor;
+
+        } else { // Torn MIN (Rival, usem colorRival)
+            int minValor = Integer.MAX_VALUE;
+            
+            for (int col = 0; col < t.getMida(); ++col) {
+                if (t.movpossible(col)) {
+                    Tauler nouTauler = new Tauler(t);
+                    nouTauler.afegeix(col, colorRival); // Tira el rival
+
+                    if (nouTauler.solucio(col, colorRival)) {
+                        nodesExplorats++;
+                        return -100000 - depth;
+                    }
+
+                    // Cridem recursivament, ara ens toca a nosaltres (true)
+                    int eval = minimax(nouTauler, depth - 1, alpha, beta, true);
+                    
+                    minValor = Math.min(minValor, eval);
+                    beta = Math.min(beta, eval);
+                    
+                    if (beta <= alpha) break;
+                }
+            }
+            return minValor;
+        }
+    }
+
+    private int avaluarTauler(Tauler t, int colorJugador) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
